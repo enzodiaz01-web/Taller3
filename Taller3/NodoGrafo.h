@@ -67,7 +67,7 @@ public:
     ~NodoDirectorio() {
         if (hijos) delete[] hijos;
     }
-    bool es_directorio() { return true; }
+    bool es_directorio() override { return true; }
     int* lista_hijos() {return hijos;}
     int get_cant_hijos() { return num_hijos; }
 

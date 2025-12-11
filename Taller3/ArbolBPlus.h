@@ -1,13 +1,15 @@
 #pragma once
 #include "NodoBPlusBase.h" 
+#include "NodoGrafo.h"
 #include <iostream>
+using namespace std;
 
 class ArbolBPlus {
 private:
     NodoBPlusBase* raiz;
     int orden; 
     void insertar_en_nodo_interno_con_espacio(NodoBInterno* padre, int clave, NodoBPlusBase* hijo_derecho) {
-        int k = padre->getCantidad_clave();
+        int k = padre->getCantidad_claves();
         int* claves = padre->getClaves();
         NodoBPlusBase** punteros = padre->getPunteros();
 
@@ -20,7 +22,7 @@ private:
 
         claves[k] = clave;
         punteros[k + 1] = hijo_derecho;
-        padre->setCantidad_claves(padre->getCantidad_clave() + 1);
+        padre->setCantidad_claves(padre->getCantidad_claves() + 1);
     }
     void insertar_en_padre(NodoBPlusBase* n, int clave, NodoBPlusBase* nuevo_nodo) {
         // Caso Base: Si n es la raíz, el árbol crece en altura
@@ -39,7 +41,7 @@ private:
         // Caso Recursivo: Insertar en el padre existente
         NodoBInterno* padre = (NodoBInterno*)n->getPadre();
 
-        if (padre->getCantidad_clave() < orden) {
+        if (padre->getCantidad_claves() < orden) {
             // Si hay espacio, insertamos ordenadamente y terminamos
             insertar_en_nodo_interno_con_espacio(padre, clave, nuevo_nodo);
         } else {
@@ -52,7 +54,7 @@ private:
         int* claves_temp = new int[orden + 1];
         NodoGrafo** datos_temp = new NodoGrafo*[orden + 1];
 
-        int total = hoja->getCantidad_clave();
+        int total = hoja->getCantidad_claves();
         int* claves_orig = hoja->getClaves();
         NodoGrafo** datos_orig = hoja->getDatos();
 
@@ -108,7 +110,7 @@ private:
         int* claves_temp = new int[orden + 1];
         NodoBPlusBase** punteros_temp = new NodoBPlusBase*[orden + 2];
 
-        int total_claves = nodo->getCantidad_clave();
+        int total_claves = nodo->getCantidad_claves();
         int* claves_actuales = nodo->getClaves();
         NodoBPlusBase** punteros_actuales = nodo->getPunteros();
 
@@ -170,11 +172,11 @@ private:
         
         for(int z = split_idx + 1; z < orden + 1; z++) {
             nuevo_interno->agregar(claves_temp[z]);
-            nuevo_interno->setPunteros(nuevo_interno->getCantidad_clave(), punteros_temp[z+1]);
+            nuevo_interno->setPunteros(nuevo_interno->getCantidad_claves(), punteros_temp[z+1]);
         }
 
         // Actualizar padres de los hijos movidos
-        for(int z = 0; z <= nuevo_interno->getCantidad_clave(); z++) {
+        for(int z = 0; z <= nuevo_interno->getCantidad_claves(); z++) {
             if(nuevo_interno->getPunteros()[z])
                 nuevo_interno->getPunteros()[z]->setPadre(nuevo_interno);
         }
@@ -193,12 +195,8 @@ public:
         this->orden = _orden;
         this->raiz = nullptr;
     }
-
     ~ArbolBPlus() {
-   
     }
-
-    
     NodoGrafo* buscar(int id) {
         if (raiz == nullptr) return nullptr;
 
@@ -241,11 +239,45 @@ public:
         NodoBHoja* hoja = (NodoBHoja*)actual;
 
         // 3. Insertar o Dividir
-        if (hoja->getCantidad_clave() < orden) {
+        if (hoja->getCantidad_claves() < orden) {
             hoja->insertar_dato(id, nodo);
         } else {
             // Hoja llena -> Split
             split_hoja(hoja, id, nodo);
+        }
+    }
+    void eliminar(int id) {
+        if (raiz == nullptr) return;
+
+        // 1. Buscar la hoja correspondiente
+        NodoBPlusBase* actual = raiz;
+        while (!actual->getHoja()) {
+            NodoBInterno* interno = (NodoBInterno*)actual;
+            int idx = interno->buscar_siguiente(id);
+            if (idx > interno->getCantidad_claves()) idx = interno->getCantidad_claves();
+            actual = interno->getPunteros()[idx];
+        }
+
+        NodoBHoja* hoja = (NodoBHoja*)actual;
+        
+        // 2. Buscar y borrar en la hoja
+        int pos = -1;
+        int* claves = hoja->getClaves();
+        for (int i = 0; i < hoja->getCantidad_claves(); i++) {
+            if (claves[i] == id) {
+                pos = i;
+                break;
+            }
+        }
+
+        if (pos != -1) {
+            // Desplazar (Shift Left)
+            for (int i = pos; i < hoja->getCantidad_claves() - 1; i++) {
+                hoja->getClaves()[i] = hoja->getClaves()[i+1];
+                hoja->getDatos()[i] = hoja->getDatos()[i+1];
+            }
+            hoja->setCantidad_claves(hoja->getCantidad_claves() - 1);
+            cout << "Eliminado ID " << id << " del indice fisico." << endl;
         }
     }
 };

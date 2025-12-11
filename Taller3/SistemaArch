@@ -1,102 +1,121 @@
-#pragma once
-#include "ArbolBPlus.h"
+#include "SistemaArch.h"
+// Si NodoGrafo, NodoDirectorio, etc. están en ArbolBPlus.h, esto funcionará.
+// Si no, asegúrate de incluir sus headers aquí también.
+
 #include <iostream>
+#include <string>
+
 using namespace std;
-class NodoGrafo;
-class SistemaArchivos {
 
-private:
-    ArbolBPlus* arbol;
+// --- CONSTRUCTOR ---
+SistemaArchivos::SistemaArchivos() {
+    arbol = new ArbolBPlus(4); // Orden 4
+    
+    // Crear directorio raíz (ID 0) por defecto
+    NodoDirectorio* root = new NodoDirectorio(0);
+    arbol->insertar(0, root);
+}
 
-public:
-    SistemaArchivos() {
-        arbol = new ArbolBPlus(4); // Orden 4 por ejemplo
-        
-        // Crear directorio raíz (ID 0) por defecto
-        NodoDirectorio* root = new NodoDirectorio(0);
-        arbol->insertar(0, root);
+// --- MÉTODO PRIVADO AUXILIAR ---
+void SistemaArchivos::_rutas_recursivas(int id_actual, string ruta_parcial, string* lista, int& contador) {
+    NodoGrafo* nodo = arbol->buscar(id_actual);
+    if(!nodo) return;
+    
+    string nombre = nodo->es_directorio() ? to_string(nodo->getID()) : ((NodoArchivo*)nodo)->get_nombre();
+    string nueva_ruta = "/" + nombre + ruta_parcial;
+
+    // Caso Base: Raíz
+    if (nodo->get_cant_padres() == 0) {
+        lista[contador++] = nueva_ruta;
+        return;
     }
 
-    // REQUERIMIENTO: Crear Nodo (Conecta Grafo y Arbol)
-    void crear_nodo(int id_nuevo, int id_padre, string nombre, bool es_carpeta, int tamano = 0) {
-        // 1. Crear Estructura Lógica
-        NodoGrafo* nuevo;
-        if (es_carpeta) nuevo = new NodoDirectorio(id_nuevo);
-        else nuevo = new NodoArchivo(id_nuevo, tamano, 1, nombre);
-
-        // 2. Insertar en Índice Físico
-        arbol->insertar(id_nuevo, nuevo);
-
-        // 3. Actualizar Relaciones (Grafo)
-        NodoGrafo* padre = arbol->buscar(id_padre);
-        if (padre && padre->es_directorio()) {
-            ((NodoDirectorio*)padre)->agregar_hijo(id_nuevo);
-            nuevo->agregar_padre(id_padre); // Relación bidireccional
-            cout << "Nodo " << id_nuevo << " creado con exito." << endl;
-        } else {
-            cout << "Error: Padre no existe." << endl;
-        }
+    // Recursión hacia arriba
+    int* padres = nodo->lista_padres();
+    for(int i=0; i<nodo->get_cant_padres(); i++){
+        _rutas_recursivas(padres[i], nueva_ruta, lista, contador);
     }
+}
 
-    // REQUERIMIENTO: Listar Contenido
-    void listar_contenido(int id_directorio) {
-        NodoGrafo* nodo = arbol->buscar(id_directorio);
-        if (nodo && nodo->es_directorio()) {
-            NodoDirectorio* dir = (NodoDirectorio*)nodo;
-            int* hijos = dir->lista_hijos();
-            int cant = dir->get_cant_hijos();
+// --- CREAR NODO ---
+void SistemaArchivos::crear_nodo(int id_nuevo, int id_padre, string nombre, bool es_carpeta, int tamano) {
+    // 1. Crear Estructura Lógica
+    NodoGrafo* nuevo;
+    if (es_carpeta) nuevo = new NodoDirectorio(id_nuevo);
+    else nuevo = new NodoArchivo(id_nuevo, tamano, 1, nombre);
 
-            cout << "Contenido de " << id_directorio << ":" << endl;
-            for(int i = 0; i < cant; i++) {
-                // AQUÍ SE CUMPLE EL REQUISITO: Acceso mediado por B+
-                NodoGrafo* hijo = arbol->buscar(hijos[i]); 
-                if (hijo) {
-                    if (hijo->es_directorio()) 
-                        cout << " [DIR] " << hijo->getID() << endl;
-                    else 
-                        cout << " [FILE] " << ((NodoArchivo*)hijo)->get_nombre() << endl;
-                }
-            }
-        }
+    // 2. Insertar en Índice Físico
+    arbol->insertar(id_nuevo, nuevo);
+
+    // 3. Actualizar Relaciones (Grafo)
+    NodoGrafo* padre = arbol->buscar(id_padre);
+    if (padre && padre->es_directorio()) {
+        ((NodoDirectorio*)padre)->agregar_hijo(id_nuevo);
+        nuevo->agregar_padre(id_padre); // Relación bidireccional
+        cout << "Nodo " << id_nuevo << " creado con exito." << endl;
+    } else {
+        cout << "Error: Padre no existe o no es un directorio." << endl;
     }
+}
 
-    // REQUERIMIENTO: Calcular Espacio (Recursivo DFS)
-    int calcular_espacio(int id) {
-        NodoGrafo* nodo = arbol->buscar(id); // Siempre buscar en B+
-        if (!nodo) return 0;
-
-        if (!nodo->es_directorio()) {
-            return ((NodoArchivo*)nodo)->get_tamano();
-        }
-
-        int total = 0;
+// --- LISTAR CONTENIDO ---
+void SistemaArchivos::listar_contenido(int id_directorio) {
+    NodoGrafo* nodo = arbol->buscar(id_directorio);
+    if (nodo && nodo->es_directorio()) {
         NodoDirectorio* dir = (NodoDirectorio*)nodo;
         int* hijos = dir->lista_hijos();
-        for(int i = 0; i < dir->get_cant_hijos(); i++) {
-            total += calcular_espacio(hijos[i]); // Recursión
+        int cant = dir->get_cant_hijos();
+
+        cout << "Contenido de " << id_directorio << ":" << endl;
+        for(int i = 0; i < cant; i++) {
+            NodoGrafo* hijo = arbol->buscar(hijos[i]); 
+            if (hijo) {
+                if (hijo->es_directorio()) 
+                    cout << " [DIR] " << hijo->getID() << endl;
+                else 
+                    cout << " [FILE] " << ((NodoArchivo*)hijo)->get_nombre() << endl;
+            }
         }
-        return total;
+    } else {
+        cout << "ID invalido o no es un directorio." << endl;
     }
+}
+
+// --- CALCULAR ESPACIO ---
+int SistemaArchivos::calcular_espacio(int id) {
+    NodoGrafo* nodo = arbol->buscar(id); // Siempre buscar en B+
+    if (!nodo) return 0;
+
+    if (!nodo->es_directorio()) {
+        return ((NodoArchivo*)nodo)->get_tamano();
+    }
+
+    int total = 0;
+    NodoDirectorio* dir = (NodoDirectorio*)nodo;
+    int* hijos = dir->lista_hijos();
+    for(int i = 0; i < dir->get_cant_hijos(); i++) {
+        total += calcular_espacio(hijos[i]); // Recursión
+    }
+    return total;
+}
+
+// --- IMPRIMIR RUTAS ---
+void SistemaArchivos::imprimir_rutas(int id_actual, string ruta_actual) {
+    NodoGrafo* nodo = arbol->buscar(id_actual);
+    if(!nodo) return;
     
-    // REQUERIMIENTO: Rutas completas
-    // (Implementación simplificada recursiva inversa)
-    void imprimir_rutas(int id_actual, string ruta_actual) {
-        NodoGrafo* nodo = arbol->buscar(id_actual);
-        if(!nodo) return;
-        
-        // Añadir nombre a la ruta (al revés, estamos subiendo)
-        string nombre = nodo->es_directorio() ? to_string(nodo->getID()) : ((NodoArchivo*)nodo)->get_nombre();
-        string nueva_ruta = "/" + nombre + ruta_actual;
+    // Añadir nombre a la ruta (al revés, estamos subiendo)
+    string nombre = nodo->es_directorio() ? to_string(nodo->getID()) : ((NodoArchivo*)nodo)->get_nombre();
+    string nueva_ruta = "/" + nombre + ruta_actual;
 
-        if (nodo->get_cant_padres() == 0) {
-            // Llegamos a la raíz (no tiene padres)
-            cout << "Ruta: " << nueva_ruta << endl;
-            return;
-        }
-
-        int* padres = nodo->lista_padres();
-        for(int i=0; i<nodo->get_cant_padres(); i++){
-            imprimir_rutas(padres[i], nueva_ruta);
-        }
+    if (nodo->get_cant_padres() == 0) {
+        // Llegamos a la raíz (no tiene padres)
+        cout << "Ruta: " << nueva_ruta << endl;
+        return;
     }
-};
+
+    int* padres = nodo->lista_padres();
+    for(int i=0; i<nodo->get_cant_padres(); i++){
+        imprimir_rutas(padres[i], nueva_ruta);
+    }
+}
