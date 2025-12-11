@@ -1,4 +1,5 @@
 #include <iostream>
+#include "NodoGrafo.h"
 using namespace std;
 class NodoGrafo;
 

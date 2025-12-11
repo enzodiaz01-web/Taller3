@@ -1,10 +1,11 @@
+#pragma
 #include <iostream>
 #include <string>
 
 using namespace std;
 
 class NodoGrafo {
-private:
+protected:
 int id;
 int* padres;      
 int num_padres;
@@ -66,11 +67,8 @@ public:
     ~NodoDirectorio() {
         if (hijos) delete[] hijos;
     }
-
     bool es_directorio() { return true; }
-    int* lista_hijos() {
-        return hijos;
-    }
+    int* lista_hijos() {return hijos;}
     int get_cant_hijos() { return num_hijos; }
 
     void agregar_hijo(int id_h) {
