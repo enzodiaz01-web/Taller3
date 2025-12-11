@@ -10,7 +10,7 @@ bool es_hoja; // indica si es nodo interno o hoja del árbol
 int cantidad_clave;
 public:
 NodoBPlusBase(int orden, bool es_hoja){
-    orden = orden;
+    this->orden = orden;
     es_hoja = es_hoja;
     cantidad_clave =0;
     claves = new int[orden];
@@ -57,8 +57,57 @@ public:
         punteros[indice]=nodo;
     }
 };
+
 class NodoBHoja: public NodoBPlusBase {
 private:
-NodoGrafo** datos; // vector del tipo NodoGrafo*
-NodoBHoja* siguiente_hoja; // puntero del tipo NodoBHoja*
+    NodoGrafo** datos; // vector del tipo NodoGrafo*
+    NodoBHoja* siguiente_hoja; // Puntero para la lista enlazada secuencial
+
+public:
+    NodoBHoja(int orden) : NodoBPlusBase(orden, true) {
+        // En las hojas guardamos punteros a los datos reales
+        datos = new NodoGrafo*[orden]; 
+        siguiente_hoja = nullptr;
+    }
+
+    ~NodoBHoja() {
+        if(datos) delete[] datos;
+        // No borramos siguiente_hoja aquí para evitar borrados en cascada no deseados,
+        // eso lo maneja el árbol.
+    }
+
+    NodoGrafo** getDatos() { return datos; }
+    
+    NodoBHoja* getSiguiente() { return siguiente_hoja; }
+    void setSiguiente(NodoBHoja* sig) { siguiente_hoja = sig; }
+
+    // Inserta un dato en la hoja ordenadamente
+    void insertar_dato(int clave, NodoGrafo* dato) {
+        if (getCantidad_clave() < getOrden()) {
+            int i = getCantidad_clave() - 1;
+            int* mis_claves = getClaves();
+            
+            // Desplazar elementos para hacer espacio (Insertion Sort simple)
+            while (i >= 0 && mis_claves[i] > clave) {
+                mis_claves[i + 1] = mis_claves[i];
+                datos[i + 1] = datos[i];
+                i--;
+            }
+            
+            mis_claves[i + 1] = clave;
+            datos[i + 1] = dato;
+            setCantidad_claves(getCantidad_clave() + 1);
+        }
+    }
+    
+    // Busca un nodo grafo específico en esta hoja
+    NodoGrafo* buscar_dato(int clave) {
+        int* mis_claves = getClaves();
+        for (int i = 0; i < getCantidad_clave(); i++) {
+            if (mis_claves[i] == clave) {
+                return datos[i];
+            }
+        }
+        return nullptr;
+    }
 };

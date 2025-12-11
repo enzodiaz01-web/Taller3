@@ -11,7 +11,7 @@ int num_padres;
 int max_padres;  
 public:
     NodoGrafo(int id) {
-        id = id;
+        this->id = id;
         num_padres = 0;
         max_padres = 2;
         padres = new int[max_padres];
@@ -22,7 +22,7 @@ public:
     int getID(){return id;}
     virtual bool es_directorio()=0;
     int* lista_padres(){return padres;}
-    int get_cant_padres(){return;}
+    int get_cant_padres(){return num_padres;}
 
     void agregar_padre(int id_p) {
         if (num_padres == max_padres) {
