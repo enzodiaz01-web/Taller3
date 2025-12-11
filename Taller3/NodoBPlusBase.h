@@ -3,28 +3,42 @@ using namespace std;
 class NodoGrafo;
 
 class NodoBPlusBase {
-private:
-int* claves; // vector de ids de NodoGrafo
-int orden; // factor m de árbol
-bool es_hoja; // indica si es nodo interno o hoja del árbol
-int cantidad_clave;
+// CAMBIO 1: Se recomienda cambiar 'private' a 'protected' para que 
+// NodoBInterno y NodoBHoja puedan acceder a 'padre' y 'claves' directamente.
+protected: 
+    int* claves; 
+    int orden; 
+    bool es_hoja; 
+    int cantidad_clave;
+    NodoBPlusBase* padre; // <--- [AGREGAR AQUÍ] Puntero al padre
+
 public:
-NodoBPlusBase(int orden, bool es_hoja){
-    this->orden = orden;
-    es_hoja = es_hoja;
-    cantidad_clave =0;
-    claves = new int[orden];
+    NodoBPlusBase(int orden, bool es_hoja){
+        this->orden = orden;
+        this->es_hoja = es_hoja; // (OJO: Agregué 'this->' aquí también para corregir el error)
+        cantidad_clave = 0;
+        claves = new int[orden];
+        
+        padre = nullptr; // <--- [AGREGAR AQUÍ] Inicializar padre en nulo
     }
+
     virtual ~NodoBPlusBase(){
         if(claves) delete[] claves;
     }
+
+    // --- [AGREGAR AQUÍ] Los nuevos métodos para manejar el padre ---
+    NodoBPlusBase* getPadre() { return padre; }
+    void setPadre(NodoBPlusBase* p) { padre = p; }
+    // -------------------------------------------------------------
+
     bool getHoja(){ return es_hoja;}
     int getOrden(){return orden;}
     int getCantidad_clave(){return cantidad_clave;}
     int* getClaves(){return claves;}
     void setCantidad_claves(int cant){ cantidad_clave = cant;}
+    
     void agregar(int clave){
-        if(cantidad_clave<orden){
+        if(cantidad_clave < orden){
             claves[cantidad_clave++] = clave;
         }
     }
