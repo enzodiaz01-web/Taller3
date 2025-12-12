@@ -1,7 +1,4 @@
 #include "SistemaArch.h"
-// Si NodoGrafo, NodoDirectorio, etc. están en ArbolBPlus.h, esto funcionará.
-// Si no, asegúrate de incluir sus headers aquí también.
-
 #include <iostream>
 #include <string>
 

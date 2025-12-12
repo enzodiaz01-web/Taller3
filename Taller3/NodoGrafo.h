@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 #include <iostream>
 #include <string>
 
@@ -50,8 +50,6 @@ public:
             num_padres--;
         }
     }
-
-    virtual bool es_directorio() = 0; 
 };
 class NodoDirectorio : public NodoGrafo {
 private:
@@ -105,11 +103,11 @@ private:
     int tipo; // 0: Imagen; 1: Documento; 2: ejecutable; 3: Video; 4: Comprimido
 public:
     NodoArchivo(int id, int tamano, int tipo, string nombre) : NodoGrafo(id) {
-        tamaño = tamano;
-        tipo = tipo;
-        nombre = nombre;
+        this->tamaño = tamano;
+         this->tipo = tipo;
+         this->nombre = nombre;
     }
-    bool es_directorio() { return false; }
+    bool es_directorio() override {return false; }
     int get_tamano() { return tamaño; }
     int get_tipo() { return tipo; }
     string get_nombre() { return nombre; }
