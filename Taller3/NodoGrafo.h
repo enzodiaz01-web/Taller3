@@ -26,6 +26,8 @@ public:
     int get_cant_padres(){return num_padres;}
 
     void agregar_padre(int id_p) {
+        for(int i=0; i<num_padres; i++) if(padres[i] == id_p) return;
+
         if (num_padres == max_padres) {
             int* aux = new int[max_padres * 2];
             for(int i=0; i<num_padres; i++) aux[i] = padres[i];
@@ -70,6 +72,8 @@ public:
     int get_cant_hijos() { return num_hijos; }
 
     void agregar_hijo(int id_h) {
+        for(int i=0; i<num_hijos; i++) if(hijos[i] == id_h) return;
+
         if (num_hijos == max_hijos) {
             int* aux = new int[max_hijos * 2];
             for(int i=0; i<num_hijos; i++) aux[i] = hijos[i];

@@ -1,7 +1,8 @@
+#pragma once
 #include <iostream>
 #include "NodoGrafo.h"
 using namespace std;
-class NodoGrafo;
+
 
 class NodoBPlusBase {
 protected: 

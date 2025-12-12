@@ -1,5 +1,5 @@
 #pragma once
-#include "ArbolBPlus.h" // Asumiendo que separaste el árbol también
+#include "ArbolBPlus.h"
 #include <string>
 #include <iostream>
 using namespace std;
@@ -15,5 +15,6 @@ public:
     void listar_contenido(int id_directorio);
     int calcular_espacio(int id);
     void imprimir_rutas(int id_actual, string ruta_actual); 
-    // Agrega aquí los prototipos de las otras funciones (calcular_espacio, etc.)
+    void eliminar_nodo(int id);
+    void crear_enlace(int id_archivo, int id_nuevo_padre);
 };
