@@ -102,17 +102,17 @@ public:
 
 class NodoArchivo: public NodoGrafo {
 private:
-    int tamaño;
+    int tamano;
     string nombre;
     int tipo; // 0: Imagen; 1: Documento; 2: ejecutable; 3: Video; 4: Comprimido
 public:
     NodoArchivo(int id, int tamano, int tipo, string nombre) : NodoGrafo(id) {
-        this->tamaño = tamano;
+        this->tamano = tamano;
          this->tipo = tipo;
          this->nombre = nombre;
     }
     bool es_directorio() override {return false; }
-    int get_tamano() { return tamaño; }
+    int get_tamano() { return tamano; }
     int get_tipo() { return tipo; }
     string get_nombre() { return nombre; }
 };
